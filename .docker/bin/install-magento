@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+
+#
+
+set_vars(){
+    GIT=`which git` > /dev/null
+    PHP_BIN=`which php`
+    OS=`uname -s`
+    REV=`uname -r`
+    MACH=`uname -m`
+    BASE_PATH_USER=~
+
+    # Define text styles
+    BOLD=`tput bold`
+    NORMAL=`tput sgr0`
+
+    # Reset
+    RESETCOLOR='\e[0m'       # Text Reset
+
+    # Regular Colors
+    BLACK='\e[0;30m'        # Black
+    RED='\e[0;31m'          # Red
+    GREEN='\e[0;32m'        # Green
+    YELLOW='\e[0;33m'       # Yellow
+    BLUE='\e[0;34m'         # Blue
+    PURPLE='\e[0;35m'       # Purple
+    CYAN='\e[0;36m'         # Cyan
+    WHITE='\e[0;37m'        # White
+
+    # Background
+    ONBLACK='\e[40m'       # Black
+    ONRED='\e[41m'         # Red
+    ONGREEN='\e[42m'       # Green
+    ONYELLOW='\e[43m'      # Yellow
+    ONBLUE='\e[44m'        # Blue
+    ONPURPLE='\e[45m'      # Purple
+    ONCYAN='\e[46m'        # Cyan
+    ONWHITE='\e[47m'       # White
+
+    # Nice defaults
+    NOW_2_FILE=$(date +%Y-%m-%d_%H-%M-%S)
+    DATE_EN_US=$(date '+%Y-%m-%d %H:%M:%S')
+    DATE_PT_BR=$(date '+%d/%m/%Y %H:%M:%S')
+}
+
+set_vars
+
+echo -e "${ONPURPLE} '2018-05-10 16:39' ${NORMAL}"
+echo -e "${ONWHITE} - ${NORMAL}"
+
+#
+
+echo -e "${ONPURPLE} 'composer update' ${NORMAL}"
+
+cat > composer.json <<- _EOF_
+{
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": [
+        "proprietary"
+    ],
+    "repositories":[
+        {
+            "type":"composer",
+            "url":"https://packages.firegento.com"
+        }
+    ],
+    "extra":{
+        "magento-root-dir": "./",
+        "magento-deploystrategy": "symlink",
+        "magento-force": true
+    },
+    "require": {
+        "magento-hackathon/magento-composer-installer": "~3.0",
+        "aydin-hassan/magento-core-composer-installer": "~1.2",
+        "firegento/magento": "~1.9.3.1",
+        "aoepeople/aoe_scheduler": "^1.5",
+        "husseycoding/customordergrid": "*",
+        "connect20/Clarion_Customerattribute": "^1.0",
+        "mozgbrasil/magento-bundle-php_56": "dev-master"
+    }
+}
+_EOF_
+
+composer update
+
+#
+
+echo -e "${ONPURPLE} 'Sample data' ${NORMAL}"
+
+echo -e "${ONPURPLE} 'wget' ${NORMAL}"
+
+wget https://raw.githubusercontent.com/Vinai/compressed-magento-sample-data/1.9.1.0/compressed-no-mp3-magento-sample-data-1.9.1.0.tar.7z
+
+7za x compressed-no-mp3-magento-sample-data-1.9.1.0.tar.7z
+
+tar -xvf compressed-no-mp3-magento-sample-data-1.9.1.0.tar
+
+echo -e "${ONPURPLE} 'cp' ${NORMAL}"
+
+cp -rf magento-sample-data-1.9.1.0/media/* ./media/
+
+echo -e "${ONPURPLE} 'db' ${NORMAL}"
+
+mysql -h 'db' -u 'root' -p'root' 'magento' < 'magento-sample-data-1.9.1.0/magento_sample_data_for_1.9.1.0.sql'
+
+echo -e "${ONPURPLE} 'rm' ${NORMAL}"
+
+rm -fr compressed-no-mp3-magento-sample-data-1.9.1.0.tar compressed-no-mp3-magento-sample-data-1.9.1.0.tar.7z magento-sample-data-1.9.1.0
+
+#
+
+echo -e "${ONPURPLE} 'Install' ${NORMAL}"
+
+pwd && ls -lah
+
+php -f install.php -- \
+--license_agreement_accepted "yes" \
+--locale "pt_BR" \
+--timezone "America/Sao_Paulo" \
+--default_currency "BRL" \
+--db_host "db" \
+--db_name "magento" \
+--db_user "root" \
+--db_pass "root" \
+--url "http://localhost/magento/" \
+--skip_url_validation "yes" \
+--use_rewrites "yes" \
+--use_secure "no" \
+--secure_base_url "" \
+--use_secure_admin "no" \
+--admin_firstname "Magento" \
+--admin_lastname "User" \
+--admin_email "mailer@mozg.com.br" \
+--admin_username "admin" \
+--admin_password "123456a"
+
+php index.php
+
+echo -e "${ONPURPLE} 'Shell' ${NORMAL}"
+
+php shell/compiler.php --state
+
+php shell/log.php --clean
+
+php shell/indexer.php --status
+
+php shell/indexer.php --info
+
+php shell/indexer.php --reindexall
+
+echo -e "${ONPURPLE} 'mage' ${NORMAL}"
+
+chmod +x mage
+
+./mage
+
+./mage mage-setup
+
+./mage sync
+
+./mage list-installed
+
+./mage list-upgrades
+
+echo -e "${ONPURPLE} 'FIM' ${NORMAL}"
+
+echo "
+===================== 🚀 Done 🚀 ===================
+
+      Magento Installed successfully!
+
+      🌎 Admin: http://localhost/magento/admin
+      👤 User: admin
+      🔑 Password: 123456a
+
+===================== 🚀 Done 🚀 ==================="

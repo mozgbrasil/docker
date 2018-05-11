@@ -1,0 +1,97 @@
+version: '2'
+services:
+  apache:
+    #image: mozgbrasil/docker-php
+    build: .
+    ports:
+      #- "80:80" # web
+      - "88:80" # web
+      - "9001:9000" # xdebug
+      # - "35729:35729" # live reload
+    volumes:
+      # Mount volumes related to ln -s htdocs
+      - /home/marcio/dados:/home/marcio/dados:cached
+
+      # Mount custom mass virtual hosting
+      - ~/dados/www:/var/www/html
+
+      - ~/.composer:/var/www/.composer
+      - ~/.npm:/var/www/.npm
+      # - ~/.nvm:/var/www/.nvm
+    ##environment:
+    #  XDEBUG_CONFIG: "remote_host=localhost"
+    #  PHP_IDE_CONFIG: "serverName=Docker"
+    env_file:
+      - env
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - <project_name>-network
+
+  #composer:
+  #  image: composer # https://hub.docker.com/_/composer/
+  #  volumes:
+  #    - "~/dados/public_html:/app"
+  #  command: install
+
+  db:
+    image: mariadb
+    ports:
+     - 3300:3306
+    ##environment:
+    #  - MYSQL_ROOT_PASSWORD=root
+    #  - MYSQL_DATABASE=magento
+    #  - MYSQL_USER=magento
+    #  - MYSQL_PASSWORD=magento
+    env_file:
+      - env
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - <project_name>-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ##environment:
+    # - PMA_HOST=db
+    # - PMA_USER=root
+    # - PMA_PASSWORD=root
+    # - MYSQL_ROOT_PASSWORD=root
+    env_file:
+      - env
+    ports:
+     - 8080:80
+    networks:
+      - <project_name>-network
+
+  redis:
+    image: redis
+    ports:
+     - 6379
+    networks:
+      - <project_name>-network
+
+  redis-session:
+    image: redis
+    ports:
+     - 6379
+    networks:
+      - <project_name>-network
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - <project_name>-network
+
+networks:
+  <project_name>-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
