@@ -39,16 +39,15 @@ Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubu
 
 ## **Web server:**
 
-http://localhost:87
-http://localhost:87/phpinfo.php
+http://localhost
 
-http://localhost:88
-http://localhost:88/phpinfo.php
+http://localhost/phpinfo.php
 
 ## **PHPMyAdmin:** 
 
-http://localhost:8087
-http://localhost:8088
+http://localhost:8080
+
+user: root
 
 ## **Local emails:** 
 
@@ -68,7 +67,7 @@ http://localhost:8025
 
     docker-compose up --build
 
-    docker-compose exec --user root bitnami-apache bash
+    docker-compose exec --user root library-apache bash
 
     -
 

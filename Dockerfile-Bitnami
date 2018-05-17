@@ -14,10 +14,9 @@ RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommen
 
 ## Configuring system
 
-COPY ./modules /opt/bitnami/php/lib/php/extensions/
-COPY ./php-conf/disabled/*.ini /opt/bitnami/php/lib/
-COPY ./php-conf/disabled/*.ini /opt/bitnami/php/etc/conf.d/
-COPY ./php-conf/*.ini /opt/bitnami/php/etc/conf.d/
+#COPY ./modules /opt/bitnami/php/lib/php/extensions/
+#COPY ./php-conf/disabled/ /opt/bitnami/php/lib/
+#COPY ./php-conf/ /opt/bitnami/php/etc/conf.d/
 
 
 #VOLUME /app

@@ -9,21 +9,19 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ## Install System Dependencies
 
-RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends nano
-
-#RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends software-properties-common python-software-properties libfreetype6-dev libicu-dev libssl-dev libjpeg62-turbo-dev libmcrypt-dev libpng12-dev libedit-dev libedit2 libxslt1-dev redis-tools mysql-client vim apt-utils wget git nano curl lynx psmisc p7zip-full unzip tar cron bash-completion dialog
+RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends software-properties-common python-software-properties libfreetype6-dev libicu-dev libssl-dev libjpeg62-turbo-dev libmcrypt-dev libpng12-dev libedit-dev libedit2 libxslt1-dev redis-tools mysql-client vim apt-utils wget git nano curl lynx psmisc p7zip-full unzip tar cron bash-completion dialog
 
 ## Install Webserver Dependencies
 
-#RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 
-#RUN docker-php-ext-install opcache gd bcmath intl mbstring mcrypt pdo_mysql soap xsl zip sockets calendar
+RUN docker-php-ext-install opcache gd bcmath intl mbstring mcrypt pdo_mysql soap xsl zip sockets calendar
 
 ## Install Composer
 
 #COPY --from=composer:1.6 /usr/bin/composer /usr/bin/composer
 
-#RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer && composer --version
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer && composer --version
 
 #RUN ls -lah $HOME
 
@@ -35,7 +33,7 @@ RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommen
 
 ## Install Mhsendmail
 
-#RUN DEBIAN_FRONTEND=noninteractive apt-get -y install golang-go && mkdir /opt/go && export GOPATH=/opt/go && go get github.com/mailhog/mhsendmail
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install golang-go && mkdir /opt/go && export GOPATH=/opt/go && go get github.com/mailhog/mhsendmail
 
 ## Install Node, NVM, NPM and Grunt
 
@@ -81,13 +79,14 @@ RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommen
 #RUN chmod +x /usr/local/bin/*
 #RUN ln -s /etc/apache2/sites-available/magento.conf /etc/apache2/sites-enabled/magento.conf
 
-COPY ./php-conf/*.ini /usr/local/etc/php/conf.d/
+COPY ./php-conf/ /usr/local/etc/php/conf.d/
+COPY ./php-conf/disabled/ /usr/local/etc/php/conf.d/
 
-#COPY ./config/php/*.conf /usr/local/etc/php/conf.d/
+#COPY ./apache-conf/docker-library/ /etc/apache2/sites-available/
 
 RUN a2enmod proxy_fcgi setenvif actions rewrite headers
 
 RUN chmod 777 -Rf /var/www /var/www/.* && chown -Rf www-data:www-data /var/www /var/www/.* && usermod -u 1000 www-data && chsh -s /bin/bash www-data
 
-#VOLUME /var/www/html
-#WORKDIR /var/www/html
+VOLUME /var/www/html
+WORKDIR /var/www/html

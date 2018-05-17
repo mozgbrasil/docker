@@ -1,175 +1,80 @@
 version: '2'
 services:
-  # ------------------------------------------------------------
-  # apache
-  # ------------------------------------------------------------
-  mozg-apache:
+  library-apache:
     #image: mozgbrasil/docker-php
     build: .
-    restart: always
-    env_file:
-      - .env
-    environment:
-      ##
-      ## Debug/Logging
-      ##
-      - DEBUG_ENTRYPOINT=${DEBUG_COMPOSE_ENTRYPOINT}
-      - DEBUG_COMPOSE_ENTRYPOINT
-      - DOCKER_LOGS
-
-      ##
-      ## UserID and GroupID
-      ##
-      - NEW_UID
-      - NEW_GID
-
-      ##
-      ## Adjust timezone
-      ##
-      - TIMEZONE
-
-      ##
-      ## Mail-catching
-      ##
-      - ENABLE_MAIL=1
-
     ports:
-      - "87:80" # web
-      #- "9001:9000" # xdebug
-      # - "35729:35729" # live reload
+      - "80:80"
     volumes:
-      # ---- Format: ----
-      # HOST-DIRECTORY : DOCKER-DIRECTORY
-
       # Mount volumes related to ln -s htdocs
-      - ${HOST_PATH_HTTPD_SYMLINK}:${HOST_PATH_HTTPD_SYMLINK}:consistent
-
-      # Mount custom intranet
-      #- ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
-
+      - /home/marcio/dados/:/home/marcio/dados/
       # Mount custom mass virtual hosting
-      - ${HOST_PATH_HTTPD_DATADIR}:/var/www/html
-      #- ${HOST_PATH_HTTPD_DATADIR}:/shared/httpd
-      #- ~/dados/www:/var/www/html
+      - ~/dados/mount/www/:/var/www/html/
+      # Mount user-defined *.ini files in order to overwrite the default *.ini configuration
+      #- ./php-conf:/usr/local/etc/php/conf.d:ro
+      # Mount user-defined *.conf files in order to overwrite the default *.conf configuration
+      #- ./apache-conf:/etc/apache2/sites-available:ro
+      # Mount user-defined *.so files in order to load custom PHP modules
+      - ./modules/:/usr/lib64/php/custom-modules/
 
-      # Mount logs
-      #- ~/dados/mount/log/php:/var/log/php
+#  library-mariadb:
+#    image: mariadb
+#    environment:
+#      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+#    ports:
+#      - '3307:3306'
+#    volumes:
+#      # Mount MySQL Data directory
+#      - ~/dados/mount/mariadb-data3/:/var/lib/mysql/
+#  library-phpmyadmin:
+#    image: phpmyadmin/phpmyadmin
+#    depends_on:
+#      - library-mariadb
+#    environment:
+#      #- MYSQL_ROOT_PASSWORD=root
+#      - PMA_ARBITRARY=1
+#      - PMA_HOST=library-mariadb
+#      #- PMA_VERBOSE=library-mariadb
+#      - PMA_PORT=3307
+#      #- PMA_HOSTS=???
+#      #- PMA_USER=root
+#      #- PMA_PASSWORD=root
+#      #- PMA_ABSOLUTE_URI=???
+#    ports:
+#      - 8087:80
+#    volumes:
+#      # Mount MySQL Data directory
+#      - ~/dados/mount/mariadb-data3/:/var/lib/mysql/
 
-      # Mount Mail directory
-      #- ~/dados/mount/run/mail:/var/mail
-
-      # Mount DB Backup directory
-      #- ${DEVILBOX_PATH}/backups:/shared/backups
-
-      # Mount devilbox user-defined *.ini files in order
-      # to overwrite the default *.ini configuration
-      #- ${DEVILBOX_PATH}/cfg/php-ini-${PHP_SERVER}:/etc/php-custom.d:ro
-      #- ${DEVILBOX_PATH}/cfg/php-ini-${PHP_SERVER}:/usr/local/etc/php/conf.d:ro
-
-      # Mount devilbox user-defined *.conf files in order
-      # to overwrite the default *.conf configuration
-      #- ${DEVILBOX_PATH}/cfg/php-fpm-${PHP_SERVER}:/etc/php-fpm-custom.d:ro
-      #- ${DEVILBOX_PATH}/cfg/php-fpm-${PHP_SERVER}:/etc/apache2/sites-available:ro
-
-      # Mount devilbox user-defined *.so files in order
-      # to load custom PHP modules
-      - ./modules:/usr/lib64/php/custom-modules
-
-      # Mount devilbox user-defined bash config
-      #- ${DEVILBOX_PATH}/bash:/etc/bashrc-devilbox.d
+  bitnami-fix-mariadb-permissions:
+    image: 'bitnami/mariadb:latest'
     depends_on:
-      - mozg-mysql
-    links:
-      - mozg-mysql
-    networks:
-      - <project_name>-network
-
-  # ------------------------------------------------------------
-  # MySQL Database
-  # ------------------------------------------------------------
-  mozg-mysql:
-    image: mariadb
-
-    ##
-    ## All .env variables
-    ##
-    ## Source all variables defined in .env
-    ## This also makes any custom variable available in each container
-    ##
-    env_file:
-      - .env
-
-    environment:
-
-      ##
-      ## Debug?
-      ##
-      - DEBUG_COMPOSE_ENTRYPOINT
-
-      ##
-      ## Adjust timezone
-      ##
-      - TIMEZONE
-
-      ##
-      ## Adjust Root password
-      ##
-      #- MYSQL_ROOT_PASSWORD
-
-      ##
-      ## Socket directory Path
-      ##
-      - MYSQL_SOCKET_DIR=/tmp/mysql
-
-      ##
-      ## Runtime settings
-      ##
-      - MYSQL_GENERAL_LOG=${MYSQL_GENERAL_LOG}
-
-    ports:
-      # [local-machine:]local-port:docker-port
-      - "3307:3306"
-
-    networks:
-      - <project_name>-network
-      #app_net:
-        #ipv4_address: 172.16.238.12
-
+      - library-apache
+    user: root
+    command: chown -R 1001:1001 /bitnami/mariadb/data/
     volumes:
-      # ---- Format: ----
-      # HOST-DIRECTORY : DOCKER-DIRECTORY
-
-      # Mount logs
-      #- ~/dados/mount/log/${MYSQL_SERVER}:/var/log/mysql
-
-      # Mount devilbox default overwrites
-      #- ${DEVILBOX_PATH}/.devilbox/etc/${MYSQL_SERVER}:/etc/mysql/conf.d:ro
-
-      # Mount devilbox user-defined cnf files in order
-      # to overwrite the MySQL server configuration
-      #- ${DEVILBOX_PATH}/config/${MYSQL_SERVER}:/etc/mysql/docker-default.d:ro
-
-      # Mount MySQL Data directory
-      - ~/dados/mount/mariadb-data:/var/lib/mysql
-
-  # ------------------------------------------------------------
-  # phpmyadmin
-  # ------------------------------------------------------------
-  mozg-phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    env_file:
-      - .env
-      
-    ##environment:
-    # - PMA_HOST=db
-    # - PMA_USER=root
-    # - PMA_PASSWORD=root
-    # - MYSQL_ROOT_PASSWORD=root
+      - ~/dados/mount/mariadb-data/:/bitnami/mariadb/data/
+  bitnami-mariadb:
+    image: 'bitnami/mariadb:latest'
+    depends_on:
+      - bitnami-fix-mariadb-permissions
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
     ports:
-     - 8087:80
-    networks:
-      - <project_name>-network
-
-networks:
-  <project_name>-network:
-    driver: bridge
+      - '3306:3306'
+    volumes:
+      - ~/dados/mount/mariadb-data/:/bitnami/mariadb/data/
+  bitnami-phpmyadmin:
+    image: bitnami/phpmyadmin:latest
+    depends_on:
+      - bitnami-mariadb
+    environment:
+      - PHPMYADMIN_ALLOW_ARBITRARY_SERVER=true
+      - PHPMYADMIN_ALLOW_NO_PASSWORD=yes
+      - DATABASE_HOST=bitnami-mariadb
+      - DATABASE_PORT_NUMBER=3306
+      #- WEBSERVER_REQUIRE=all granted
+    ports:
+      - '8080:80'
+    volumes:
+      - ~/dados/mount/mariadb-data/:/bitnami/mariadb/data/
