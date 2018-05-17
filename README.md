@@ -25,9 +25,11 @@ Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubu
 
 ## Pull & Run
 
-    mkdir -p ~/dados/dockers
+    cd ~/dados/dockers
 
-    git clone https://github.com/mozgbrasil/docker mozg-docker
+    git clone https://github.com/mozgbrasil/docker mozg_docker
+
+    cd mozg_docker
 
     docker-compose up
 
