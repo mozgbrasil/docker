@@ -23,15 +23,15 @@ Install [Docker](https://docs.docker.com/docker-for-windows/install/), [Docker-c
 
 Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) and [Docker-compose](https://docs.docker.com/compose/install/#install-compose).
 
-## Pull & Run "Mozg"
+## Pull & Run
 
-    curl -sSL https://raw.githubusercontent.com/mozgbrasil/docker/master/docker-compose.yml > docker-compose.yml
+    mkdir -p ~/dados/dockers
+
+    git clone https://github.com/mozgbrasil/docker mozg-docker
 
     docker-compose up
 
-## Pull & Run "Bitnami"
-
-    curl -sSL https://raw.githubusercontent.com/mozgbrasil/docker/master/docker-compose-bitnami.yml > docker-compose-bitnami.yml
+    # OR
 
     docker-compose --file docker-compose-bitnami.yml up --build
 
@@ -62,6 +62,14 @@ http://localhost:8025
 
     -
 
+    docker-compose down --remove-orphans
+
+    docker-compose up --build
+
+    docker-compose exec --user root bitnami-apache bash
+
+    -
+
     docker-compose --file docker-compose-bitnami.yml down --remove-orphans
 
     docker-compose --file docker-compose-bitnami.yml up --build
@@ -69,6 +77,10 @@ http://localhost:8025
     docker-compose --file docker-compose-bitnami.yml exec --user root bitnami-apache bash
 
     docker-compose --file docker-compose-bitnami.yml exec --user root bitnami-fix-php-fpm bash
+
+    docker-compose restart bitnami-php-fpm
+
+    docker-compose restart bitnami-apache
 
     -
 
