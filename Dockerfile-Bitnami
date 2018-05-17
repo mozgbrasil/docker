@@ -1,0 +1,24 @@
+#FROM bitnami/apache:latest
+FROM bitnami/php-fpm:latest
+
+LABEL Marcio dos Santos Amorim <suporte@mozg.com.br>
+
+# Fix debconf warnings upon build
+ARG DEBIAN_FRONTEND=noninteractive
+
+## Install System Dependencies
+
+RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends nano
+
+#RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends software-properties-common python-software-properties libfreetype6-dev libicu-dev libssl-dev libjpeg62-turbo-dev libmcrypt-dev libpng12-dev libedit-dev libedit2 libxslt1-dev redis-tools mysql-client vim apt-utils wget git nano curl lynx psmisc p7zip-full unzip tar cron bash-completion dialog
+
+## Configuring system
+
+COPY ./modules /opt/bitnami/php/lib/php/extensions/
+COPY ./php-conf/disabled/*.ini /opt/bitnami/php/lib/
+COPY ./php-conf/disabled/*.ini /opt/bitnami/php/etc/conf.d/
+COPY ./php-conf/*.ini /opt/bitnami/php/etc/conf.d/
+
+
+#VOLUME /app
+#WORKDIR /app

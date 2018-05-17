@@ -1,97 +1,175 @@
 version: '2'
 services:
-  apache:
+  # ------------------------------------------------------------
+  # apache
+  # ------------------------------------------------------------
+  mozg-apache:
     #image: mozgbrasil/docker-php
     build: .
+    restart: always
+    env_file:
+      - .env
+    environment:
+      ##
+      ## Debug/Logging
+      ##
+      - DEBUG_ENTRYPOINT=${DEBUG_COMPOSE_ENTRYPOINT}
+      - DEBUG_COMPOSE_ENTRYPOINT
+      - DOCKER_LOGS
+
+      ##
+      ## UserID and GroupID
+      ##
+      - NEW_UID
+      - NEW_GID
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## Mail-catching
+      ##
+      - ENABLE_MAIL=1
+
     ports:
-      #- "80:80" # web
-      - "88:80" # web
-      - "9001:9000" # xdebug
+      - "87:80" # web
+      #- "9001:9000" # xdebug
       # - "35729:35729" # live reload
     volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
       # Mount volumes related to ln -s htdocs
-      - /home/marcio/dados:/home/marcio/dados:cached
+      - ${HOST_PATH_HTTPD_SYMLINK}:${HOST_PATH_HTTPD_SYMLINK}:consistent
+
+      # Mount custom intranet
+      #- ${DEVILBOX_PATH}/.devilbox/www:/var/www/default:ro
 
       # Mount custom mass virtual hosting
-      - ~/dados/www:/var/www/html
+      - ${HOST_PATH_HTTPD_DATADIR}:/var/www/html
+      #- ${HOST_PATH_HTTPD_DATADIR}:/shared/httpd
+      #- ~/dados/www:/var/www/html
 
-      - ~/.composer:/var/www/.composer
-      - ~/.npm:/var/www/.npm
-      # - ~/.nvm:/var/www/.nvm
-    ##environment:
-    #  XDEBUG_CONFIG: "remote_host=localhost"
-    #  PHP_IDE_CONFIG: "serverName=Docker"
-    env_file:
-      - env
+      # Mount logs
+      #- ~/dados/mount/log/php:/var/log/php
+
+      # Mount Mail directory
+      #- ~/dados/mount/run/mail:/var/mail
+
+      # Mount DB Backup directory
+      #- ${DEVILBOX_PATH}/backups:/shared/backups
+
+      # Mount devilbox user-defined *.ini files in order
+      # to overwrite the default *.ini configuration
+      #- ${DEVILBOX_PATH}/cfg/php-ini-${PHP_SERVER}:/etc/php-custom.d:ro
+      #- ${DEVILBOX_PATH}/cfg/php-ini-${PHP_SERVER}:/usr/local/etc/php/conf.d:ro
+
+      # Mount devilbox user-defined *.conf files in order
+      # to overwrite the default *.conf configuration
+      #- ${DEVILBOX_PATH}/cfg/php-fpm-${PHP_SERVER}:/etc/php-fpm-custom.d:ro
+      #- ${DEVILBOX_PATH}/cfg/php-fpm-${PHP_SERVER}:/etc/apache2/sites-available:ro
+
+      # Mount devilbox user-defined *.so files in order
+      # to load custom PHP modules
+      - ./modules:/usr/lib64/php/custom-modules
+
+      # Mount devilbox user-defined bash config
+      #- ${DEVILBOX_PATH}/bash:/etc/bashrc-devilbox.d
     depends_on:
-      - db
+      - mozg-mysql
     links:
-      - db
+      - mozg-mysql
     networks:
       - <project_name>-network
 
-  #composer:
-  #  image: composer # https://hub.docker.com/_/composer/
-  #  volumes:
-  #    - "~/dados/public_html:/app"
-  #  command: install
-
-  db:
+  # ------------------------------------------------------------
+  # MySQL Database
+  # ------------------------------------------------------------
+  mozg-mysql:
     image: mariadb
-    ports:
-     - 3300:3306
-    ##environment:
-    #  - MYSQL_ROOT_PASSWORD=root
-    #  - MYSQL_DATABASE=magento
-    #  - MYSQL_USER=magento
-    #  - MYSQL_PASSWORD=magento
+
+    ##
+    ## All .env variables
+    ##
+    ## Source all variables defined in .env
+    ## This also makes any custom variable available in each container
+    ##
     env_file:
-      - env
-    volumes:
-      - dbdata:/var/lib/mysql
+      - .env
+
+    environment:
+
+      ##
+      ## Debug?
+      ##
+      - DEBUG_COMPOSE_ENTRYPOINT
+
+      ##
+      ## Adjust timezone
+      ##
+      - TIMEZONE
+
+      ##
+      ## Adjust Root password
+      ##
+      #- MYSQL_ROOT_PASSWORD
+
+      ##
+      ## Socket directory Path
+      ##
+      - MYSQL_SOCKET_DIR=/tmp/mysql
+
+      ##
+      ## Runtime settings
+      ##
+      - MYSQL_GENERAL_LOG=${MYSQL_GENERAL_LOG}
+
+    ports:
+      # [local-machine:]local-port:docker-port
+      - "3307:3306"
+
     networks:
       - <project_name>-network
+      #app_net:
+        #ipv4_address: 172.16.238.12
 
-  phpmyadmin:
+    volumes:
+      # ---- Format: ----
+      # HOST-DIRECTORY : DOCKER-DIRECTORY
+
+      # Mount logs
+      #- ~/dados/mount/log/${MYSQL_SERVER}:/var/log/mysql
+
+      # Mount devilbox default overwrites
+      #- ${DEVILBOX_PATH}/.devilbox/etc/${MYSQL_SERVER}:/etc/mysql/conf.d:ro
+
+      # Mount devilbox user-defined cnf files in order
+      # to overwrite the MySQL server configuration
+      #- ${DEVILBOX_PATH}/config/${MYSQL_SERVER}:/etc/mysql/docker-default.d:ro
+
+      # Mount MySQL Data directory
+      - ~/dados/mount/mariadb-data:/var/lib/mysql
+
+  # ------------------------------------------------------------
+  # phpmyadmin
+  # ------------------------------------------------------------
+  mozg-phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    env_file:
+      - .env
+      
     ##environment:
     # - PMA_HOST=db
     # - PMA_USER=root
     # - PMA_PASSWORD=root
     # - MYSQL_ROOT_PASSWORD=root
-    env_file:
-      - env
     ports:
-     - 8080:80
-    networks:
-      - <project_name>-network
-
-  redis:
-    image: redis
-    ports:
-     - 6379
-    networks:
-      - <project_name>-network
-
-  redis-session:
-    image: redis
-    ports:
-     - 6379
-    networks:
-      - <project_name>-network
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - 1025:1025
-      - 8025:8025
+     - 8087:80
     networks:
       - <project_name>-network
 
 networks:
   <project_name>-network:
     driver: bridge
-
-volumes:
-  dbdata:
-    driver: local

@@ -5,7 +5,9 @@
 
 ## Sinopse
 
-Apache 2.4 + PHP 7.0 + OPCache + MariaDB + N98 Magerun 2 + XDebug + Redis
+Baseado em 
+
+https://docs.bitnami.com/containers/how-to/create-amp-environment-containers/
 
 ### Requirements
 
@@ -21,27 +23,94 @@ Install [Docker](https://docs.docker.com/docker-for-windows/install/), [Docker-c
 
 Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) and [Docker-compose](https://docs.docker.com/compose/install/#install-compose).
 
-## Perguntas mais frequentes "FAQ"
+## Pull & Run "Mozg"
 
+    curl -sSL https://raw.githubusercontent.com/mozgbrasil/docker/master/docker-compose.yml > docker-compose.yml
+
+    docker-compose up
+
+## Pull & Run "Bitnami"
+
+    curl -sSL https://raw.githubusercontent.com/mozgbrasil/docker/master/docker-compose-bitnami.yml > docker-compose-bitnami.yml
+
+    docker-compose --file docker-compose-bitnami.yml up --build
+
+## **Web server:**
+
+http://localhost:87
+http://localhost:87/phpinfo.php
+
+http://localhost:88
+http://localhost:88/phpinfo.php
+
+## **PHPMyAdmin:** 
+
+http://localhost:8087
+http://localhost:8088
+
+## **Local emails:** 
+
+http://localhost:8025
+
+## Perguntas mais frequentes "FAQ"
+<!--
 #### Util
 
+    -
+
     docker images && docker images ps && docker ps
+
+    -
+
+    docker-compose --file docker-compose-bitnami.yml down --remove-orphans
+
+    docker-compose --file docker-compose-bitnami.yml up --build
+
+    docker-compose --file docker-compose-bitnami.yml exec --user root bitnami-apache bash
+
+    docker-compose --file docker-compose-bitnami.yml exec --user root bitnami-fix-php-fpm bash
+
+    -
+
+
+
+
+
+
+
+
+    
+    docker network ls && docker network prune && docker service ls
+
+    docker-compose exec php bash
+
+    docker run -it --name phpfpm -v ./app:/app bitnami/php-fpm
+
+    mkdir apache-vhost
 
     docker rmi -f ebfbbf98d46f
 
     docker-compose down --remove-orphans
-<!--
+
+    docker run -it bash
+
+    docker-compose exec --user root mariadb bash
+    
+
 #### Build-Start | Re-Build
 
-    cd ~/dados/git/projects/docker    
+    cd ~/dados/git/projects/docker
+
+    docker-compose up
 
     ./start
+
+
 
     docker-compose up -d --build # Re-Build
 
     docker-compose up --build # Re-Build
 
--->
 #### FIX: privileges image
 #### FIX: var/www/.composer/cache/vcs does not exist and could not be created
 
@@ -50,77 +119,7 @@ Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubu
     docker-compose exec --user root apache chown www-data:www-data /var/www/.npm -Rf
 
     docker-compose exec --user root apache chown www-data:www-data /var/www/.composer -Rf
-
-#### Install Magento
-
-    cd ~/dados/git/projects/docker
-
-    ./shell
-    
-    ls
-    mkdir magento
-    cd magento
-    install-magento
-    exit
-
-#### Install Magento2
-
-    cd ~/dados/git/projects/docker-php
-
-    ./shell
-
-    ls
-    mkdir magento2
-    cd magento2
-    install-magento2
-    exit
-
-### Plataforma Magento1
-
-    cd ~/dados/public_html
-
-### Plataforma Magento2
-
-
-
-#### Pull & Install
-
-    cd ~/dados/public_html
-
-    curl -s https://raw.githubusercontent.com/clean-docker/Magento2/master/init | bash -s docker-magento2 clone
-
-    cd docker-magento2
-    ./shell
-    rm index.php
-    install-magento2
-
-#### Execute
-
-### Panels
-
-Enjoy your new panels!
-
-**Web server:** http://localhost/
-
-**PHPMyAdmin:** http://localhost:8080
-
-**Local emails:** http://localhost:8025
-
-### Features commands
-
-| Commands  | Description  | Options & Examples |
-|---|---|---|
-| `./init`  | If you didn't use the CURL setup command above, please use this command changing the name of the project.  | `./init MYMAGENTO2` |
-| `./start`  | If you continuing not using the CURL you can start your container manually  | |
-| `./stop`  | Stop your project containers  | |
-| `./kill`  | Stops containers and removes containers, networks, volumes, and images created to the specific project  | |
-| `./shell`  | Access your container  | `./shell root` | |
-| `./magento`  | Use the power of the Magento CLI  | |
-| `./n98`  | Use the Magerun commands as you want | |
-| `./grunt-init`  | Prepare to use Grunt  | |
-| `./grunt`  | Use Grunt specifically in your theme or completely, it'll do the deploy and the watcher.  | `./grunt luma` |
-| `./xdebug`  |  Enable / Disable the XDebug | |
-| `./composer`  |  Use Composer commands | `./composer update` |
+-->
 
 ## Contribuintes
 

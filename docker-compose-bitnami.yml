@@ -1,0 +1,84 @@
+version: '2'
+
+services:
+  bitnami-apache-preloader:
+    image: bitnami/apache:latest
+    #build:
+      #context: .
+      #dockerfile: Dockerfile-Bitnami
+    command: ls
+    #volumes:
+
+  bitnami-apache:
+    image: bitnami/apache:latest
+    #build:
+      #context: .
+      #dockerfile: Dockerfile-Bitnami
+    depends_on:
+      - bitnami-apache-preloader
+    ports:
+      - 88:80
+    volumes:
+      # Mount volumes related to ln -s htdocs
+      #- /home/marcio/dados:/home/marcio/dados
+      # Mount custom mass virtual hosting
+      - ./www:/app
+      # Mount custom *.conf
+      - ./apache-conf:/bitnami/apache/conf/vhosts
+
+  bitnami-php-fpm:
+    image: bitnami/php-fpm:latest
+    #build:
+      #context: .
+      #dockerfile: Dockerfile-Bitnami
+    depends_on:
+      - bitnami-apache
+    volumes:
+      # Mount volumes related to ln -s htdocs
+      #- /home/marcio/dados:/home/marcio/dados
+      # Mount custom mass virtual hosting
+      - ./www:/app
+      # Mount user-defined *.so files in order to load custom PHP modules
+      #- ./modules:/usr/lib64/php/custom-modules
+      # Mount custom *.ini
+      #- ./php-conf:/opt/bitnami/php/etc/conf.d
+  bitnami-fix-php-fpm:
+    #image: bitnami/php-fpm:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-Bitnami
+    depends_on:
+      - bitnami-php-fpm
+
+  bitnami-fix-mariadb-permissions:
+    image: 'bitnami/mariadb:latest'
+    depends_on:
+      - bitnami-php-fpm
+    user: root
+    command: chown -R 1001:1001 /bitnami/mariadb/data
+    volumes:
+      - ~/dados/mount/mariadb-data:/bitnami/mariadb/data
+  bitnami-mariadb:
+    image: 'bitnami/mariadb:latest'
+    depends_on:
+      - bitnami-fix-mariadb-permissions
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '3308:3306'
+    volumes:
+      - ~/dados/mount/mariadb-data:/bitnami/mariadb/data
+  bitnami-phpmyadmin:
+    image: bitnami/phpmyadmin:latest
+    depends_on:
+      - bitnami-mariadb
+    environment:
+      - PHPMYADMIN_ALLOW_ARBITRARY_SERVER=true
+      - PHPMYADMIN_ALLOW_NO_PASSWORD=yes
+      - DATABASE_HOST=mariadb
+      - DATABASE_PORT_NUMBER=3308
+      - DATABASE_PORT_NUMBER=all granted
+    ports:
+      - '8088:80'
+    volumes:
+      - ~/dados/mount/mariadb-data:/bitnami/mariadb/data
