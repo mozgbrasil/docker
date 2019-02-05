@@ -9,7 +9,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ## Install System Dependencies
 
-RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends software-properties-common python-software-properties libfreetype6-dev libicu-dev libssl-dev libjpeg62-turbo-dev libmcrypt-dev libpng12-dev libedit-dev libedit2 libxslt1-dev redis-tools mysql-client vim apt-utils wget git nano curl lynx psmisc p7zip-full unzip tar cron bash-completion dialog
+RUN pwd && ls -lah && apt-get update && apt-get install -y --no-install-recommends software-properties-common  libfreetype6-dev libicu-dev libssl-dev libjpeg62-turbo-dev libmcrypt-dev libedit-dev libedit2 libxslt1-dev redis-tools mysql-client vim apt-utils wget git nano curl lynx psmisc p7zip-full unzip tar cron bash-completion dialog openssh-server
+
+# E: Package 'python-software-properties' has no installation candidate
+# python-software-properties libpng12-dev
 
 ## Install Webserver Dependencies
 
