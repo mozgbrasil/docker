@@ -57,9 +57,9 @@ http://localhost:8025
 
 ### Docker Cytopia Config
 
-    cd ~/dados/git/clone
+    cd ~/dados/containers_docker
 
-    git clone https://github.com/cytopia/devilbox devilbox-2019-01-19
+    git clone https://github.com/cytopia/devilbox devilbox-2019-02-18
 
         CONFIG
 
@@ -88,7 +88,7 @@ http://localhost:8025
 
 ## Run Image
 
-    cd ~/dados/git/clone/devilbox-2019-01-19 && docker-compose down --remove-orphans && cd ~/dados/git/clone/devilbox-2019-01-19 && docker-compose up
+    cd /home/marcio/dados/containers_docker/devilbox-2019-02-18-php56 && docker-compose down --remove-orphans && docker-compose up
 
 ### Removendo images e containers
 
